@@ -1,0 +1,17 @@
+{
+  "name": "claude-clean",
+  "version": "1.0.0",
+  "description": "Scan and redact sensitive data from Claude Code session files",
+  "main": "src/redactor.js",
+  "bin": {
+    "claude-clean": "src/redactor.js"
+  },
+  "scripts": {
+    "scan": "node src/redactor.js --dry-run --verbose",
+    "redact": "node src/redactor.js --backup",
+    "redact:no-backup": "node src/redactor.js"
+  },
+  "keywords": ["claude", "security", "redaction", "secrets", "api-keys"],
+  "author": "William Lettieri",
+  "license": "MIT"
+}
