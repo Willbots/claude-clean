@@ -43,7 +43,9 @@ class Config:
             sensitivity = Sensitivity.MEDIUM
 
         projects_path_str = data.get("projects_path")
-        projects_path = Path(projects_path_str) if projects_path_str else DEFAULT_PROJECTS_PATH
+        projects_path = (
+            Path(projects_path_str).expanduser() if projects_path_str else DEFAULT_PROJECTS_PATH
+        )
 
         return cls(
             sensitivity=sensitivity,

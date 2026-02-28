@@ -46,8 +46,8 @@ def _redact_in_object(
         if not all_matches:
             return obj, 0
 
-        # Sort matches by start position (reverse) to replace from end to start
-        all_matches.sort(key=lambda x: x[0], reverse=True)
+        # Sort by span length descending to prioritize longest matches during dedup
+        all_matches.sort(key=lambda x: x[1] - x[0], reverse=True)
 
         # Deduplicate overlapping matches (keep the longest)
         filtered: list[tuple[int, int, str]] = []
@@ -59,6 +59,9 @@ def _redact_in_object(
                     break
             if not overlaps:
                 filtered.append((start, end, text))
+
+        # Sort by start descending for safe end-to-start replacement
+        filtered.sort(key=lambda x: x[0], reverse=True)
 
         for start, end, _ in filtered:
             new_text = new_text[:start] + REDACTED + new_text[end:]
