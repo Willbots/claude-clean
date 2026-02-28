@@ -1,0 +1,4 @@
+
+src/claude_clean.egg-info/
+__pycache__/
+*.pyc
