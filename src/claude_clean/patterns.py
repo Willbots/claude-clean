@@ -50,7 +50,7 @@ _LOW_PATTERNS: list[SecretPattern] = [
     ),
     SecretPattern(
         name="openai_api_key",
-        pattern=_compile(r"sk-[A-Za-z0-9_-]{20,}"),
+        pattern=_compile(r"sk-(?!ant-)[A-Za-z0-9_-]{20,}"),
         sensitivity=Sensitivity.LOW,
         description="OpenAI API Key",
     ),
