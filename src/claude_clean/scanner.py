@@ -28,7 +28,8 @@ class Finding:
         text = self.matched_text
         if len(text) <= 8:
             return text[:2] + "***" + text[-1:]
-        return text[:4] + "***" + text[-4:]
+        show = max(2, len(text) // 4)
+        return text[:show] + "***" + text[-show:]
 
 
 def _extract_strings(obj: object) -> list[str]:

@@ -122,7 +122,8 @@ def redact_file(
 
     exclude_regex = _build_exclude_regex(exclude_patterns or [])
 
-    content = file_path.read_text(encoding="utf-8", errors="replace")
+    raw = file_path.read_bytes()
+    content = raw.decode("utf-8", errors="replace")
     line_ending = "\r\n" if "\r\n" in content else "\n"
     had_trailing_newline = content.endswith(("\n", "\r"))
     lines = content.splitlines()
