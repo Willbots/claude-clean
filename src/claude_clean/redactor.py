@@ -139,8 +139,12 @@ def redact_file(
             # For non-JSON lines, do regex replacement directly
             new_text = line
             matches_found = scan_text(line, patterns, exclude_regex)
-            # Sort by position descending
-            sorted_matches = sorted(matches_found, key=lambda x: x[1].start(), reverse=True)
+            # Sort by span length descending to keep longest match during dedup
+            sorted_matches = sorted(
+                matches_found,
+                key=lambda x: x[1].end() - x[1].start(),
+                reverse=True,
+            )
             seen_spans: list[tuple[int, int]] = []
             for _, match in sorted_matches:
                 start, end = match.start(), match.end()
@@ -150,9 +154,12 @@ def redact_file(
                         overlaps = True
                         break
                 if not overlaps:
-                    new_text = new_text[:start] + REDACTED + new_text[end:]
                     seen_spans.append((start, end))
                     total_redactions += 1
+            # Sort kept spans by start descending for safe end-to-start replacement
+            seen_spans.sort(key=lambda x: x[0], reverse=True)
+            for start, end in seen_spans:
+                new_text = new_text[:start] + REDACTED + new_text[end:]
             new_lines.append(new_text)
 
     file_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
