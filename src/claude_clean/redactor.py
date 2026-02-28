@@ -74,7 +74,14 @@ def _redact_in_object(
         for key, value in obj.items():
             new_key, kc = _redact_in_object(key, patterns, exclude_regex)
             new_value, vc = _redact_in_object(value, patterns, exclude_regex)
-            new_dict[str(new_key)] = new_value
+            key_str = str(new_key)
+            # Disambiguate colliding redacted keys to prevent data loss
+            if key_str in new_dict:
+                i = 2
+                while f"{key_str}_{i}" in new_dict:
+                    i += 1
+                key_str = f"{key_str}_{i}"
+            new_dict[key_str] = new_value
             count += kc + vc
         return new_dict, count
 
