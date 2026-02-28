@@ -72,9 +72,10 @@ def _redact_in_object(
     if isinstance(obj, dict):
         new_dict: dict[str, object] = {}
         for key, value in obj.items():
-            new_value, c = _redact_in_object(value, patterns, exclude_regex)
-            new_dict[key] = new_value
-            count += c
+            new_key, kc = _redact_in_object(key, patterns, exclude_regex)
+            new_value, vc = _redact_in_object(value, patterns, exclude_regex)
+            new_dict[str(new_key)] = new_value
+            count += kc + vc
         return new_dict, count
 
     if isinstance(obj, list):

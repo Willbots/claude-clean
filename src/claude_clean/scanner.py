@@ -37,7 +37,8 @@ def _extract_strings(obj: object) -> list[str]:
     if isinstance(obj, str):
         strings.append(obj)
     elif isinstance(obj, dict):
-        for value in obj.values():
+        for key, value in obj.items():
+            strings.extend(_extract_strings(key))
             strings.extend(_extract_strings(value))
     elif isinstance(obj, list):
         for item in obj:
@@ -67,6 +68,32 @@ def scan_text(
                 continue
             matches.append((pat, match))
     return matches
+
+
+def _dedup_matches(
+    matches: list[tuple[SecretPattern, re.Match[str]]],
+) -> list[tuple[SecretPattern, re.Match[str]]]:
+    """Deduplicate overlapping matches, keeping the longest span."""
+    if not matches:
+        return matches
+    # Sort by span length descending so longest wins during dedup
+    sorted_matches = sorted(
+        matches,
+        key=lambda x: x[1].end() - x[1].start(),
+        reverse=True,
+    )
+    kept: list[tuple[SecretPattern, re.Match[str]]] = []
+    for pat, match in sorted_matches:
+        start, end = match.start(), match.end()
+        overlaps = False
+        for _, existing in kept:
+            es, ee = existing.start(), existing.end()
+            if start < ee and end > es:
+                overlaps = True
+                break
+        if not overlaps:
+            kept.append((pat, match))
+    return kept
 
 
 def scan_file(
@@ -111,7 +138,7 @@ def scan_file(
             strings = [line]
 
         for text in strings:
-            matches = scan_text(text, patterns, exclude_regex)
+            matches = _dedup_matches(scan_text(text, patterns, exclude_regex))
             for pat, match in matches:
                 matched_text = match.group(0)
                 # Build context: show a window around the match
