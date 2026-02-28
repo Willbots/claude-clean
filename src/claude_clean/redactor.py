@@ -115,7 +115,10 @@ def redact_file(
 
     exclude_regex = _build_exclude_regex(exclude_patterns or [])
 
-    lines = file_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    content = file_path.read_text(encoding="utf-8", errors="replace")
+    line_ending = "\r\n" if "\r\n" in content else "\n"
+    had_trailing_newline = content.endswith(("\n", "\r"))
+    lines = content.splitlines()
     original_count = len(lines)
 
     new_lines: list[str] = []
@@ -166,7 +169,10 @@ def redact_file(
         if backup:
             backup_path = file_path.with_suffix(file_path.suffix + ".bak")
             shutil.copy2(file_path, backup_path)
-        file_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        output = line_ending.join(new_lines)
+        if had_trailing_newline:
+            output += line_ending
+        file_path.write_text(output, encoding="utf-8")
 
     return RedactionResult(
         file=file_path,
