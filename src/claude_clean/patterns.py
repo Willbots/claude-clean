@@ -261,7 +261,7 @@ _HIGH_PATTERNS: list[SecretPattern] = [
         name="email_address",
         pattern=_compile(
             r"\b[A-Za-z0-9._%+-]+"
-            r"@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+            r"@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
         ),
         sensitivity=Sensitivity.HIGH,
         description="Email address",

@@ -117,11 +117,6 @@ def redact_file(
     lines = file_path.read_text(encoding="utf-8", errors="replace").splitlines()
     original_count = len(lines)
 
-    backup_path: Path | None = None
-    if backup:
-        backup_path = file_path.with_suffix(file_path.suffix + ".bak")
-        shutil.copy2(file_path, backup_path)
-
     new_lines: list[str] = []
     total_redactions = 0
 
@@ -134,7 +129,10 @@ def redact_file(
             obj = json.loads(line)
             redacted_obj, count = _redact_in_object(obj, patterns, exclude_regex)
             total_redactions += count
-            new_lines.append(json.dumps(redacted_obj, ensure_ascii=False))
+            if count > 0:
+                new_lines.append(json.dumps(redacted_obj, ensure_ascii=False))
+            else:
+                new_lines.append(line)
         except json.JSONDecodeError:
             # For non-JSON lines, do regex replacement directly
             new_text = line
@@ -162,7 +160,12 @@ def redact_file(
                 new_text = new_text[:start] + REDACTED + new_text[end:]
             new_lines.append(new_text)
 
-    file_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+    backup_path: Path | None = None
+    if total_redactions > 0:
+        if backup:
+            backup_path = file_path.with_suffix(file_path.suffix + ".bak")
+            shutil.copy2(file_path, backup_path)
+        file_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
 
     return RedactionResult(
         file=file_path,
